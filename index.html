@@ -15,7 +15,7 @@
     --green:#3E7243;      /* verde principal · rgb(62,114,67) */
     --green-light:#5E9A63;
     --green-soft:#E9F1E9;
-    --paper:#F4F2EC; --cloud:#FBFAF6; --line:#E1DCD2; --amber:#B0791F;
+    --paper:#FFFFFF; --cloud:#FFFFFF; --line:#E4E2DB; --amber:#B0791F;
   }
   *{box-sizing:border-box}
   html,body{margin:0}
@@ -119,14 +119,6 @@
 <div class="wrap">
 
   <div class="head">
-    <svg width="36" height="36" viewBox="0 0 100 100" fill="none" aria-label="Praxia Lens">
-      <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="#3E7243"/><stop offset="1" stop-color="#6BA870"/></linearGradient></defs>
-      <circle cx="50" cy="50" r="38" stroke="#2F5468" stroke-width="4" fill="none"/>
-      <g id="seg"></g>
-      <circle cx="50" cy="50" r="14" fill="url(#lg)"/>
-      <circle cx="50" cy="50" r="5.5" fill="#fff" opacity="0.9"/>
-    </svg>
     <div>
       <div class="name">Praxia<span style="color:#5E9A63">·</span>Lens</div>
       <div class="tag">CLASIFICADOR DE TAREAS · IA</div>
@@ -174,19 +166,6 @@ const CLASS_STYLE = {
 };
 
 const MAX_BYTES = 3 * 1024 * 1024;
-
-// segmentos del logo (apertura tipo lente)
-(function(){
-  const g = document.getElementById("seg");
-  [0,60,120,180,240,300].forEach(a=>{
-    const r=a*Math.PI/180;
-    const l=document.createElementNS("http://www.w3.org/2000/svg","line");
-    l.setAttribute("x1",50+16*Math.cos(r)); l.setAttribute("y1",50+16*Math.sin(r));
-    l.setAttribute("x2",50+33*Math.cos(r)); l.setAttribute("y2",50+33*Math.sin(r));
-    l.setAttribute("stroke","#002236"); l.setAttribute("stroke-width","3.5"); l.setAttribute("stroke-linecap","round");
-    g.appendChild(l);
-  });
-})();
 
 const taskEl = document.getElementById("task");
 const out = document.getElementById("out");
