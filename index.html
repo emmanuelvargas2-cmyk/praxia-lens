@@ -8,9 +8,14 @@
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Archivo:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;500;600&display=swap');
 
   :root{
-    --ink:#0C2236; --navy:#143352; --navy2:#1C4368;
-    --green:#1F9D6B; --green-light:#34C28A; --green-soft:#E7F4EE;
-    --paper:#F4F1E9; --cloud:#FBFAF5; --line:#E2DDD0; --amber:#C9892F;
+    /* Identidad de la portada Praxia Lens */
+    --ink:#002236;        /* navy principal · rgb(0,34,54) */
+    --navy:#0E3A52;
+    --navy2:#2F5468;
+    --green:#3E7243;      /* verde principal · rgb(62,114,67) */
+    --green-light:#5E9A63;
+    --green-soft:#E9F1E9;
+    --paper:#F4F2EC; --cloud:#FBFAF6; --line:#E1DCD2; --amber:#B0791F;
   }
   *{box-sizing:border-box}
   html,body{margin:0}
@@ -28,7 +33,7 @@
 
   .card{
     background:var(--cloud);border:1px solid var(--line);border-radius:18px;padding:22px;
-    box-shadow:0 24px 60px -44px rgba(12,34,54,.4);
+    box-shadow:0 24px 60px -44px rgba(0,34,54,.45);
   }
   label.field{font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:1px;color:var(--navy2)}
   textarea{
@@ -42,22 +47,38 @@
     font-family:'Spline Sans Mono',monospace;font-size:10.5px;border:1px solid var(--line);
     background:#fff;color:var(--navy2);border-radius:999px;padding:7px 12px;cursor:pointer;transition:all .18s ease;
   }
-  .chip:hover{background:var(--navy);color:var(--cloud);border-color:var(--navy)}
+  .chip:hover{background:var(--ink);color:var(--cloud);border-color:var(--ink)}
 
-  .actions{display:flex;justify-content:flex-end;margin-top:16px}
+  .toolrow{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:14px}
+  .attach{
+    display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:500;
+    border:1px dashed var(--green);color:var(--green);background:var(--green-soft);
+    border-radius:10px;padding:9px 14px;cursor:pointer;transition:all .18s ease;
+  }
+  .attach:hover{background:#DDEBDD}
+  .filechip{
+    display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink);
+    background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 12px;
+  }
+  .filechip .x{cursor:pointer;color:var(--navy2);font-weight:700}
+  .hint{font-size:11.5px;color:#8A8676;margin-top:8px}
+
+  .actions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px}
   .btn{
-    display:inline-flex;align-items:center;gap:9px;background:var(--green);color:#06291B;
+    display:inline-flex;align-items:center;gap:9px;background:var(--green);color:#fff;
     font-weight:600;font-size:15px;padding:12px 24px;border-radius:11px;border:none;cursor:pointer;transition:all .2s ease;
   }
-  .btn:hover{transform:translateY(-1px);box-shadow:0 10px 24px -8px var(--green)}
+  .btn:hover{background:#4A8551;transform:translateY(-1px);box-shadow:0 10px 24px -10px var(--green)}
   .btn:disabled{background:#B9C4CE;color:#fff;cursor:default;transform:none;box-shadow:none}
-  .spin{width:17px;height:17px;border:2px solid #ffffff66;border-top-color:#06291B;border-radius:50%;animation:sp .8s linear infinite}
+  .btn-ghost{background:transparent;color:var(--navy2);border:1px solid var(--line);font-weight:500}
+  .btn-ghost:hover{background:#fff;color:var(--ink);border-color:var(--navy2);box-shadow:none;transform:none}
+  .spin{width:17px;height:17px;border:2px solid #ffffff66;border-top-color:#fff;border-radius:50%;animation:sp .8s linear infinite}
   @keyframes sp{to{transform:rotate(360deg)}}
 
   .err{display:flex;gap:10px;margin-top:16px;background:#FBEFEC;border:1px solid #E8C9C0;color:#8A3B25;border-radius:12px;padding:13px 15px;font-size:14px}
 
   .result{margin-top:20px;background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden;
-    box-shadow:0 24px 60px -42px rgba(12,34,54,.45);animation:up .6s cubic-bezier(.2,.7,.2,1) both}
+    box-shadow:0 24px 60px -42px rgba(0,34,54,.5);animation:up .6s cubic-bezier(.2,.7,.2,1) both}
   @keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
   .rhead{padding:22px 24px;border-bottom:1px solid var(--line)}
   .rkicker{font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:1px;color:var(--navy2)}
@@ -88,8 +109,10 @@
   .risks li{display:flex;gap:9px;font-size:13.5px;color:var(--navy2);line-height:1.55}
   .risks li span{color:var(--amber)}
 
-  .gov{display:flex;gap:12px;background:var(--ink);color:#C5D4E2;padding:18px 24px;font-size:13.5px;line-height:1.6}
+  .gov{display:flex;gap:12px;background:var(--ink);color:#C5D4DE;padding:18px 24px;font-size:13.5px;line-height:1.6}
   .gov strong{color:var(--cloud)}
+
+  .again{display:flex;justify-content:center;padding:16px 24px;border-top:1px solid var(--line);background:var(--paper)}
 </style>
 </head>
 <body>
@@ -98,25 +121,36 @@
   <div class="head">
     <svg width="36" height="36" viewBox="0 0 100 100" fill="none" aria-label="Praxia Lens">
       <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="#1F9D6B"/><stop offset="1" stop-color="#34C28A"/></linearGradient></defs>
-      <circle cx="50" cy="50" r="38" stroke="#1C4368" stroke-width="4" fill="none"/>
+        <stop offset="0" stop-color="#3E7243"/><stop offset="1" stop-color="#6BA870"/></linearGradient></defs>
+      <circle cx="50" cy="50" r="38" stroke="#2F5468" stroke-width="4" fill="none"/>
       <g id="seg"></g>
       <circle cx="50" cy="50" r="14" fill="url(#lg)"/>
       <circle cx="50" cy="50" r="5.5" fill="#fff" opacity="0.9"/>
     </svg>
     <div>
-      <div class="name">Praxia<span style="color:#34C28A">·</span>Lens</div>
+      <div class="name">Praxia<span style="color:#5E9A63">·</span>Lens</div>
       <div class="tag">CLASIFICADOR DE TAREAS · IA</div>
     </div>
   </div>
 
   <div class="card">
     <label class="field">TAREA A EVALUAR</label>
-    <textarea id="task" placeholder="Ej.: Atender y resolver quejas de clientes molestos por teléfono…"></textarea>
+    <textarea id="task" placeholder="Describe una tarea o función laboral… (o adjunta un documento abajo)"></textarea>
+
     <div class="chips" id="chips"></div>
+
+    <div class="toolrow">
+      <button class="attach" id="attachBtn" type="button">
+        <span aria-hidden="true">＋</span> Adjuntar documento o foto
+      </button>
+      <span id="fileWrap"></span>
+      <input id="fileInput" type="file" accept=".pdf,image/png,image/jpeg,image/webp,image/gif" style="display:none" />
+    </div>
+    <div class="hint">Acepta PDF e imágenes (PNG, JPG) de hasta 3 MB. Puedes adjuntar un archivo, escribir una tarea, o ambos.</div>
+
     <div class="actions">
       <button class="btn" id="go">
-        <span id="goicon">➤</span><span id="golabel">Analizar tarea</span>
+        <span id="goicon" aria-hidden="true">➤</span><span id="golabel">Analizar tarea</span>
       </button>
     </div>
   </div>
@@ -134,10 +168,12 @@ const EXAMPLES = [
 ];
 
 const CLASS_STYLE = {
-  "Automatizable":            {color:"#1F9D6B", bg:"#E7F4EE"},
-  "Híbrida":                  {color:"#C9892F", bg:"#FBF1DF"},
-  "Indispensablemente Humana":{color:"#143352", bg:"#E8EEF4"},
+  "Automatizable":            {color:"#3E7243", bg:"#E9F1E9"},
+  "Híbrida":                  {color:"#B0791F", bg:"#F6EEDD"},
+  "Indispensablemente Humana":{color:"#002236", bg:"#E4EAEE"},
 };
+
+const MAX_BYTES = 3 * 1024 * 1024;
 
 // segmentos del logo (apertura tipo lente)
 (function(){
@@ -147,7 +183,7 @@ const CLASS_STYLE = {
     const l=document.createElementNS("http://www.w3.org/2000/svg","line");
     l.setAttribute("x1",50+16*Math.cos(r)); l.setAttribute("y1",50+16*Math.sin(r));
     l.setAttribute("x2",50+33*Math.cos(r)); l.setAttribute("y2",50+33*Math.sin(r));
-    l.setAttribute("stroke","#143352"); l.setAttribute("stroke-width","3.5"); l.setAttribute("stroke-linecap","round");
+    l.setAttribute("stroke","#002236"); l.setAttribute("stroke-width","3.5"); l.setAttribute("stroke-linecap","round");
     g.appendChild(l);
   });
 })();
@@ -156,12 +192,17 @@ const taskEl = document.getElementById("task");
 const out = document.getElementById("out");
 const goBtn = document.getElementById("go");
 const goLabel = document.getElementById("golabel");
-const goIcon = document.getElementById("goicon");
+
+const attachBtn = document.getElementById("attachBtn");
+const fileInput = document.getElementById("fileInput");
+const fileWrap = document.getElementById("fileWrap");
+
+let attached = null; // { name, mediaType, data(base64) }
 
 const chips = document.getElementById("chips");
 EXAMPLES.forEach(ex=>{
   const b=document.createElement("button");
-  b.className="chip"; b.textContent=ex;
+  b.className="chip"; b.textContent=ex; b.type="button";
   b.onclick=()=>{ taskEl.value=ex; analyze(); };
   chips.appendChild(b);
 });
@@ -169,33 +210,60 @@ EXAMPLES.forEach(ex=>{
 const esc = s => String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const clamp = n => Math.max(0, Math.min(100, parseInt(n,10)||0));
 
+attachBtn.onclick = () => fileInput.click();
+fileInput.onchange = () => {
+  const f = fileInput.files && fileInput.files[0];
+  if(!f) return;
+  if(f.size > MAX_BYTES){
+    fileWrap.innerHTML = '<span class="filechip" style="color:#8A3B25;border-color:#E8C9C0">Archivo muy grande (máx 3 MB)</span>';
+    fileInput.value = ""; attached = null; return;
+  }
+  const reader = new FileReader();
+  reader.onload = () => {
+    attached = { name: f.name, mediaType: f.type || "application/octet-stream", data: String(reader.result).split(",")[1] };
+    fileWrap.innerHTML = '<span class="filechip">'+esc(f.name)+' <span class="x" id="rmFile">×</span></span>';
+    document.getElementById("rmFile").onclick = clearFile;
+  };
+  reader.readAsDataURL(f);
+};
+function clearFile(){ attached=null; fileInput.value=""; fileWrap.innerHTML=""; }
+
 function setLoading(on){
   goBtn.disabled = on;
-  if(on){ goIcon.outerHTML = '<span id="goicon" class="spin"></span>'; goLabel.textContent="Analizando…"; }
-  else { const i=document.getElementById("goicon"); if(i){ i.outerHTML='<span id="goicon">➤</span>'; } goLabel.textContent="Analizar tarea"; }
+  const icon = document.getElementById("goicon");
+  if(on){ icon.outerHTML = '<span id="goicon" class="spin"></span>'; goLabel.textContent="Analizando…"; }
+  else { const i=document.getElementById("goicon"); if(i){ i.outerHTML='<span id="goicon" aria-hidden="true">➤</span>'; } goLabel.textContent="Analizar tarea"; }
 }
 
 async function analyze(){
   const task = taskEl.value.trim();
-  if(!task) return;
+  if(!task && !attached) return;
   setLoading(true); out.innerHTML="";
   try{
     const res = await fetch("/api/classify", {
       method:"POST",
       headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({ task })
+      body: JSON.stringify({ task, file: attached ? { data: attached.data, mediaType: attached.mediaType } : null })
     });
     if(!res.ok) throw new Error("bad status");
     const data = await res.json();
     if(data.error) throw new Error(data.error);
     render(data);
   }catch(e){
-    out.innerHTML = '<div class="err"><span>⚠</span><span>No se pudo completar el análisis. Verifica que el bot esté publicado y que la llave de API esté configurada en el host. Intenta nuevamente.</span></div>';
+    out.innerHTML = '<div class="err"><span aria-hidden="true">⚠</span><span>No se pudo completar el análisis. Verifica que el bot esté publicado y que la llave de API esté configurada en Vercel. Si adjuntaste un archivo, prueba con uno más pequeño.</span></div>';
   }finally{
     setLoading(false);
   }
 }
 goBtn.onclick = analyze;
+
+function resetAll(){
+  taskEl.value = "";
+  clearFile();
+  out.innerHTML = "";
+  window.scrollTo({ top:0, behavior:"smooth" });
+  taskEl.focus();
+}
 
 function render(r){
   const cls = CLASS_STYLE[r.clasificacion] || CLASS_STYLE["Híbrida"];
@@ -203,7 +271,7 @@ function render(r){
 
   const factors = (r.factores||[]).map(f=>{
     const auto = f.direccion === "automatiza";
-    const col = auto ? "#1F9D6B" : "#143352";
+    const col = auto ? "#3E7243" : "#002236";
     const p = clamp(f.presencia);
     return `
       <div class="factor">
@@ -221,7 +289,7 @@ function render(r){
 
   const risks = Array.isArray(r.riesgos_eticos)&&r.riesgos_eticos.length
     ? `<div class="risks"><div class="rtitle">⚠ RIESGOS ÉTICOS A VIGILAR</div><ul>${
-        r.riesgos_eticos.map(x=>`<li><span>▸</span>${esc(x)}</li>`).join("")
+        r.riesgos_eticos.map(x=>`<li><span aria-hidden="true">▸</span>${esc(x)}</li>`).join("")
       }</ul></div>` : "";
 
   out.innerHTML = `
@@ -245,12 +313,16 @@ function render(r){
         ${risks}
       </div>
       <div class="gov">
-        <span style="color:#34C28A;flex-shrink:0">✎</span>
+        <span style="color:#5E9A63;flex-shrink:0" aria-hidden="true">✎</span>
         <div><strong>Supervisión humana obligatoria. </strong>${
           esc(r.gobernanza || "Esta clasificación es un insumo, no una decisión. Debe ser revisada, validada y firmada por un responsable humano, y nunca puede ser la base única de una acción de personal.")
         }</div>
       </div>
+      <div class="again">
+        <button class="btn btn-ghost" id="newBtn" type="button">↺ &nbsp;Nuevo análisis</button>
+      </div>
     </div>`;
+  document.getElementById("newBtn").onclick = resetAll;
 }
 </script>
 </body>

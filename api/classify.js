@@ -48,7 +48,27 @@ export default async function handler(req, res) {
   try {
     const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
     const task = (body.task || "").toString().trim();
-    if (!task) return res.status(400).json({ error: "No se recibió ninguna tarea." });
+    const file = body.file && body.file.data ? body.file : null;
+
+    if (!task && !file) {
+      return res.status(400).json({ error: "No se recibió ninguna tarea ni archivo." });
+    }
+
+    // Construir el contenido del mensaje (texto, o documento/imagen + instrucción)
+    let content;
+    if (file) {
+      const mt = (file.mediaType || "").toLowerCase();
+      const isPdf = mt.includes("pdf");
+      const block = isPdf
+        ? { type: "document", source: { type: "base64", media_type: "application/pdf", data: file.data } }
+        : { type: "image", source: { type: "base64", media_type: mt || "image/png", data: file.data } };
+      const instr = task
+        ? `Evalúa la tarea o función laboral descrita en el archivo adjunto. Contexto adicional del usuario: "${task}". Si el archivo describe varias tareas, enfócate en la función principal.`
+        : `Evalúa la tarea o función laboral descrita en el archivo adjunto. Si describe varias tareas, enfócate en la función principal.`;
+      content = [block, { type: "text", text: instr }];
+    } else {
+      content = `Tarea a evaluar: "${task}"`;
+    }
 
     const r = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -59,9 +79,9 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: "claude-haiku-4-5",
-        max_tokens: 1000,
+        max_tokens: 1500,
         system: SYSTEM_PROMPT,
-        messages: [{ role: "user", content: `Tarea a evaluar: "${task}"` }],
+        messages: [{ role: "user", content }],
       }),
     });
 
