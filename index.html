@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Praxia Lens · Clasificador de tareas</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Archivo:wght@400;500;600;700&family=Spline+Sans+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --ink:#0C2236; --navy:#143352; --navy2:#1C4368;
+    --green:#1F9D6B; --green-light:#34C28A; --green-soft:#E7F4EE;
+    --paper:#F4F1E9; --cloud:#FBFAF5; --line:#E2DDD0; --amber:#C9892F;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:'Archivo',sans-serif;color:var(--ink);background:var(--paper);
+    -webkit-font-smoothing:antialiased;padding:18px;
+  }
+  .display{font-family:'Fraunces',serif}
+  .mono{font-family:'Spline Sans Mono',monospace}
+  .wrap{max-width:760px;margin:0 auto}
+
+  .head{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+  .head .name{font-family:'Fraunces',serif;font-weight:600;font-size:19px;color:var(--ink);line-height:1}
+  .head .tag{font-family:'Spline Sans Mono',monospace;font-size:10px;color:var(--navy2);margin-top:4px;letter-spacing:.5px}
+
+  .card{
+    background:var(--cloud);border:1px solid var(--line);border-radius:18px;padding:22px;
+    box-shadow:0 24px 60px -44px rgba(12,34,54,.4);
+  }
+  label.field{font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:1px;color:var(--navy2)}
+  textarea{
+    width:100%;margin-top:9px;padding:13px 15px;border-radius:12px;border:1px solid var(--line);
+    background:#fff;font-size:15px;font-family:'Archivo',sans-serif;color:var(--ink);resize:vertical;min-height:74px;
+  }
+  textarea:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px var(--green-soft)}
+
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}
+  .chip{
+    font-family:'Spline Sans Mono',monospace;font-size:10.5px;border:1px solid var(--line);
+    background:#fff;color:var(--navy2);border-radius:999px;padding:7px 12px;cursor:pointer;transition:all .18s ease;
+  }
+  .chip:hover{background:var(--navy);color:var(--cloud);border-color:var(--navy)}
+
+  .actions{display:flex;justify-content:flex-end;margin-top:16px}
+  .btn{
+    display:inline-flex;align-items:center;gap:9px;background:var(--green);color:#06291B;
+    font-weight:600;font-size:15px;padding:12px 24px;border-radius:11px;border:none;cursor:pointer;transition:all .2s ease;
+  }
+  .btn:hover{transform:translateY(-1px);box-shadow:0 10px 24px -8px var(--green)}
+  .btn:disabled{background:#B9C4CE;color:#fff;cursor:default;transform:none;box-shadow:none}
+  .spin{width:17px;height:17px;border:2px solid #ffffff66;border-top-color:#06291B;border-radius:50%;animation:sp .8s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+
+  .err{display:flex;gap:10px;margin-top:16px;background:#FBEFEC;border:1px solid #E8C9C0;color:#8A3B25;border-radius:12px;padding:13px 15px;font-size:14px}
+
+  .result{margin-top:20px;background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden;
+    box-shadow:0 24px 60px -42px rgba(12,34,54,.45);animation:up .6s cubic-bezier(.2,.7,.2,1) both}
+  @keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+  .rhead{padding:22px 24px;border-bottom:1px solid var(--line)}
+  .rkicker{font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:1px;color:var(--navy2)}
+  .rtop{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px;margin-top:8px}
+  .rclass{font-family:'Fraunces',serif;font-size:27px;font-weight:600;letter-spacing:-.4px}
+  .ridx{font-family:'Spline Sans Mono',monospace;font-size:28px;font-weight:600;line-height:1}
+  .ridx small{font-size:14px;color:#9A9684}
+  .track{margin-top:15px;height:10px;border-radius:999px;background:#ffffffaa;overflow:hidden}
+  .track > div{height:100%;border-radius:999px;transition:width 1s cubic-bezier(.2,.7,.2,1)}
+  .scale{display:flex;justify-content:space-between;font-family:'Spline Sans Mono',monospace;font-size:9px;color:var(--navy2);margin-top:6px}
+
+  .rbody{padding:22px 24px}
+  .explain{font-size:15px;color:var(--ink);line-height:1.7;margin:0}
+  .sub{font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:1px;color:var(--navy2);margin:24px 0 13px}
+  .factor{margin-bottom:13px}
+  .frow{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+  .fname{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:500;color:var(--ink)}
+  .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+  .dirtag{font-family:'Spline Sans Mono',monospace;font-size:8.5px;border-radius:4px;padding:1px 6px}
+  .fval{font-family:'Spline Sans Mono',monospace;font-size:12px;color:var(--navy2)}
+  .fbar{height:7px;border-radius:999px;background:#EEEBE2;overflow:hidden}
+  .fbar > div{height:100%;border-radius:999px;transition:width 1s cubic-bezier(.2,.7,.2,1)}
+  .fnote{font-size:12px;color:#7C8794;margin-top:4px}
+
+  .risks{margin-top:24px}
+  .rtitle{font-family:'Spline Sans Mono',monospace;font-size:11px;letter-spacing:1px;color:var(--amber);margin-bottom:9px}
+  .risks ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:7px}
+  .risks li{display:flex;gap:9px;font-size:13.5px;color:var(--navy2);line-height:1.55}
+  .risks li span{color:var(--amber)}
+
+  .gov{display:flex;gap:12px;background:var(--ink);color:#C5D4E2;padding:18px 24px;font-size:13.5px;line-height:1.6}
+  .gov strong{color:var(--cloud)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="head">
+    <svg width="36" height="36" viewBox="0 0 100 100" fill="none" aria-label="Praxia Lens">
+      <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#1F9D6B"/><stop offset="1" stop-color="#34C28A"/></linearGradient></defs>
+      <circle cx="50" cy="50" r="38" stroke="#1C4368" stroke-width="4" fill="none"/>
+      <g id="seg"></g>
+      <circle cx="50" cy="50" r="14" fill="url(#lg)"/>
+      <circle cx="50" cy="50" r="5.5" fill="#fff" opacity="0.9"/>
+    </svg>
+    <div>
+      <div class="name">Praxia<span style="color:#34C28A">·</span>Lens</div>
+      <div class="tag">CLASIFICADOR DE TAREAS · IA</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <label class="field">TAREA A EVALUAR</label>
+    <textarea id="task" placeholder="Ej.: Atender y resolver quejas de clientes molestos por teléfono…"></textarea>
+    <div class="chips" id="chips"></div>
+    <div class="actions">
+      <button class="btn" id="go">
+        <span id="goicon">➤</span><span id="golabel">Analizar tarea</span>
+      </button>
+    </div>
+  </div>
+
+  <div id="out"></div>
+</div>
+
+<script>
+const EXAMPLES = [
+  "Atender y resolver quejas de clientes molestos",
+  "Generar el reporte mensual de ventas desde la base de datos",
+  "Entrevistar y seleccionar candidatos para un puesto",
+  "Clasificar y archivar facturas según su tipo",
+  "Decidir la promoción o el despido de un empleado",
+];
+
+const CLASS_STYLE = {
+  "Automatizable":            {color:"#1F9D6B", bg:"#E7F4EE"},
+  "Híbrida":                  {color:"#C9892F", bg:"#FBF1DF"},
+  "Indispensablemente Humana":{color:"#143352", bg:"#E8EEF4"},
+};
+
+// segmentos del logo (apertura tipo lente)
+(function(){
+  const g = document.getElementById("seg");
+  [0,60,120,180,240,300].forEach(a=>{
+    const r=a*Math.PI/180;
+    const l=document.createElementNS("http://www.w3.org/2000/svg","line");
+    l.setAttribute("x1",50+16*Math.cos(r)); l.setAttribute("y1",50+16*Math.sin(r));
+    l.setAttribute("x2",50+33*Math.cos(r)); l.setAttribute("y2",50+33*Math.sin(r));
+    l.setAttribute("stroke","#143352"); l.setAttribute("stroke-width","3.5"); l.setAttribute("stroke-linecap","round");
+    g.appendChild(l);
+  });
+})();
+
+const taskEl = document.getElementById("task");
+const out = document.getElementById("out");
+const goBtn = document.getElementById("go");
+const goLabel = document.getElementById("golabel");
+const goIcon = document.getElementById("goicon");
+
+const chips = document.getElementById("chips");
+EXAMPLES.forEach(ex=>{
+  const b=document.createElement("button");
+  b.className="chip"; b.textContent=ex;
+  b.onclick=()=>{ taskEl.value=ex; analyze(); };
+  chips.appendChild(b);
+});
+
+const esc = s => String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const clamp = n => Math.max(0, Math.min(100, parseInt(n,10)||0));
+
+function setLoading(on){
+  goBtn.disabled = on;
+  if(on){ goIcon.outerHTML = '<span id="goicon" class="spin"></span>'; goLabel.textContent="Analizando…"; }
+  else { const i=document.getElementById("goicon"); if(i){ i.outerHTML='<span id="goicon">➤</span>'; } goLabel.textContent="Analizar tarea"; }
+}
+
+async function analyze(){
+  const task = taskEl.value.trim();
+  if(!task) return;
+  setLoading(true); out.innerHTML="";
+  try{
+    const res = await fetch("/api/classify", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ task })
+    });
+    if(!res.ok) throw new Error("bad status");
+    const data = await res.json();
+    if(data.error) throw new Error(data.error);
+    render(data);
+  }catch(e){
+    out.innerHTML = '<div class="err"><span>⚠</span><span>No se pudo completar el análisis. Verifica que el bot esté publicado y que la llave de API esté configurada en el host. Intenta nuevamente.</span></div>';
+  }finally{
+    setLoading(false);
+  }
+}
+goBtn.onclick = analyze;
+
+function render(r){
+  const cls = CLASS_STYLE[r.clasificacion] || CLASS_STYLE["Híbrida"];
+  const idx = clamp(r.indice_automatizacion);
+
+  const factors = (r.factores||[]).map(f=>{
+    const auto = f.direccion === "automatiza";
+    const col = auto ? "#1F9D6B" : "#143352";
+    const p = clamp(f.presencia);
+    return `
+      <div class="factor">
+        <div class="frow">
+          <div class="fname">
+            <span class="dot" style="background:${col}"></span>${esc(f.nombre)}
+            <span class="dirtag" style="color:${col};border:1px solid ${col}44">${auto?"→ AUTOMATIZA":"→ HUMANO"}</span>
+          </div>
+          <span class="fval">${p}</span>
+        </div>
+        <div class="fbar"><div style="width:${p}%;background:${col}"></div></div>
+        ${f.nota?`<div class="fnote">${esc(f.nota)}</div>`:""}
+      </div>`;
+  }).join("");
+
+  const risks = Array.isArray(r.riesgos_eticos)&&r.riesgos_eticos.length
+    ? `<div class="risks"><div class="rtitle">⚠ RIESGOS ÉTICOS A VIGILAR</div><ul>${
+        r.riesgos_eticos.map(x=>`<li><span>▸</span>${esc(x)}</li>`).join("")
+      }</ul></div>` : "";
+
+  out.innerHTML = `
+    <div class="result">
+      <div class="rhead" style="background:${cls.bg}">
+        <div class="rkicker">CLASIFICACIÓN PROPUESTA</div>
+        <div class="rtop">
+          <div class="rclass" style="color:${cls.color}">${esc(r.clasificacion)}</div>
+          <div style="text-align:right">
+            <div class="rkicker">ÍNDICE DE AUTOMATIZACIÓN</div>
+            <div class="ridx" style="color:${cls.color}">${idx}<small>/100</small></div>
+          </div>
+        </div>
+        <div class="track"><div style="width:${idx}%;background:${cls.color}"></div></div>
+        <div class="scale"><span>HUMANO</span><span>HÍBRIDO</span><span>AUTOMATIZABLE</span></div>
+      </div>
+      <div class="rbody">
+        <p class="explain">${esc(r.explicacion)}</p>
+        <div class="sub">FACTORES DE CRITERIO (PESOS TRANSPARENTES)</div>
+        ${factors}
+        ${risks}
+      </div>
+      <div class="gov">
+        <span style="color:#34C28A;flex-shrink:0">✎</span>
+        <div><strong>Supervisión humana obligatoria. </strong>${
+          esc(r.gobernanza || "Esta clasificación es un insumo, no una decisión. Debe ser revisada, validada y firmada por un responsable humano, y nunca puede ser la base única de una acción de personal.")
+        }</div>
+      </div>
+    </div>`;
+}
+</script>
+</body>
+</html>
