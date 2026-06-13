@@ -1,430 +1,496 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Praxia Lens — Clasificador de tareas</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Praxia Lens · Clasificador de tareas</title>
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
+
   :root{
-    --navy:#002236;
-    --green:#3E7243;
-    --green-soft:#e8f0e9;
-    --ink:#1c2b33;
-    --muted:#5d6c74;
-    --line:#dde4e7;
-    --bg:#ffffff;
-    --auto:#3E7243;
-    --hibrida:#B7791F;
-    --humana:#1F5FA8;
+    /* Identidad de la presentación Praxia Lens */
+    --ink:#002236;        /* navy principal · rgb(0,34,54) */
+    --navy2:#3F5A68;
+    --green:#3E7243;      /* verde principal · rgb(62,114,67) */
+    --green-light:#5E9A63;
+    --green-soft:#EAF2EB;
+    --paper:#FFFFFF; --cloud:#FFFFFF; --line:#E7EBE8; --amber:#B0791F;
   }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;background:var(--bg);}
+  *{box-sizing:border-box}
+  html,body{margin:0}
   body{
-    font-family:'Archivo',system-ui,-apple-system,sans-serif;
-    color:var(--ink);
-    line-height:1.5;
-    padding:22px 18px 40px;
-    max-width:760px;
-    margin:0 auto;
+    font-family:'Montserrat',system-ui,sans-serif;color:var(--ink);background:var(--paper);
+    -webkit-font-smoothing:antialiased;padding:18px;
   }
-  .head{margin-bottom:18px;}
-  .head h1{
-    font-family:'Fraunces',Georgia,serif;
-    font-weight:700;
-    color:var(--navy);
-    font-size:clamp(22px,4vw,30px);
-    margin:0 0 4px;
-    letter-spacing:-.01em;
-  }
-  .head p{margin:0;color:var(--muted);font-size:14px;}
-  .field label{
-    display:block;font-weight:600;color:var(--navy);
-    font-size:14px;margin-bottom:6px;
-  }
-  textarea{
-    width:100%;min-height:92px;resize:vertical;
-    font-family:inherit;font-size:15px;color:var(--ink);
-    border:1.5px solid var(--line);border-radius:12px;
-    padding:12px 14px;background:#fff;outline:none;
-  }
-  textarea:focus{border-color:var(--green);}
-  .hint{font-size:12.5px;color:var(--muted);margin-top:7px;}
-  .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:12px;}
-  button{
-    font-family:inherit;font-weight:600;font-size:14.5px;
-    border-radius:10px;cursor:pointer;border:1.5px solid transparent;
-    padding:11px 18px;transition:filter .15s,background .15s,color .15s;
-  }
-  button:disabled{opacity:.55;cursor:not-allowed;}
-  .btn-primary{background:var(--navy);color:#fff;}
-  .btn-primary:hover:not(:disabled){filter:brightness(1.15);}
-  .btn-ghost{background:#fff;color:var(--navy);border-color:var(--line);}
-  .btn-ghost:hover:not(:disabled){border-color:var(--green);color:var(--green);}
-  .btn-attach{background:var(--green-soft);color:var(--green);border-color:transparent;}
-  .btn-attach:hover{filter:brightness(.97);}
-  .btn-report{background:var(--green);color:#fff;}
-  .btn-report:hover:not(:disabled){filter:brightness(1.1);}
-  #fileInput{display:none;}
-  .filechip{
-    display:inline-block;font-size:12.5px;font-weight:600;
-    border:1.5px solid var(--line);border-radius:999px;
-    padding:4px 12px;color:var(--green);
-  }
-  .filechip .x{margin-left:8px;cursor:pointer;color:var(--muted);font-weight:700;}
-  /* RESULT */
-  #result{margin-top:24px;}
+  .wrap{max-width:760px;margin:0 auto}
+
+  /* Etiqueta tipo "eyebrow" del deck: verde, versalitas, espaciada */
+  .eyebrow{font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--green)}
+
+  .head{margin-bottom:18px}
+  .head .name{font-weight:700;font-size:22px;color:var(--ink);line-height:1;letter-spacing:-.2px}
+  .head .name b{color:var(--green);font-weight:700}
+  .head .tag{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--navy2);margin-top:6px}
+
   .card{
-    border:1.5px solid var(--line);border-radius:16px;
-    overflow:hidden;background:#fff;
+    background:var(--cloud);border:1px solid var(--line);border-radius:20px;padding:24px;
+    box-shadow:0 24px 60px -46px rgba(0,34,54,.45);
   }
-  .verdict{padding:18px 20px;color:#fff;}
-  .verdict .tag{
-    font-size:12px;font-weight:700;letter-spacing:.08em;
-    text-transform:uppercase;opacity:.85;
+  label.field{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--green)}
+  textarea{
+    width:100%;margin-top:10px;padding:14px 16px;border-radius:14px;border:1px solid var(--line);
+    background:#fff;font-size:15px;font-family:'Montserrat',sans-serif;color:var(--ink);resize:vertical;min-height:76px;
   }
-  .verdict .cls{
-    font-family:'Fraunces',serif;font-weight:700;
-    font-size:22px;margin-top:2px;
+  textarea:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px var(--green-soft)}
+
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}
+  .chip{
+    font-size:11.5px;font-weight:500;border:1px solid var(--line);
+    background:#fff;color:var(--navy2);border-radius:999px;padding:8px 14px;cursor:pointer;transition:all .18s ease;
   }
-  .verdict.auto{background:var(--auto);}
-  .verdict.hibrida{background:var(--hibrida);}
-  .verdict.humana{background:var(--humana);}
-  .body{padding:18px 20px;}
-  .body h3{
-    font-size:13px;font-weight:700;color:var(--navy);
-    text-transform:uppercase;letter-spacing:.05em;margin:0 0 8px;
+  .chip:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  .toolrow{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:16px}
+  .attach{
+    display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;
+    border:1px dashed var(--green);color:var(--green);background:var(--green-soft);
+    border-radius:12px;padding:10px 15px;cursor:pointer;transition:all .18s ease;
   }
-  .summary{font-size:15px;color:var(--ink);margin:0 0 18px;}
-  .factor{
-    display:flex;justify-content:space-between;gap:14px;
-    padding:11px 0;border-top:1px solid var(--line);
+  .attach:hover{background:#DEEBDF}
+  .filechip{
+    display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:500;color:var(--ink);
+    background:#fff;border:1px solid var(--line);border-radius:12px;padding:9px 13px;
   }
-  .factor:first-of-type{border-top:none;}
-  .factor .fname{font-weight:600;color:var(--navy);font-size:14px;flex:1;}
-  .factor .fjust{color:var(--muted);font-size:13.5px;flex:2;}
-  .factor .fscore{
-    font-weight:700;font-size:13px;color:var(--green);
-    white-space:nowrap;align-self:flex-start;
+  .filechip .x{cursor:pointer;color:var(--navy2);font-weight:700}
+  .hint{font-size:11.5px;color:#8B938E;margin-top:9px}
+
+  .actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+  .btn{
+    display:inline-flex;align-items:center;gap:9px;background:var(--green);color:#fff;
+    font-family:'Montserrat',sans-serif;font-weight:600;font-size:15px;padding:12px 26px;border-radius:12px;border:none;cursor:pointer;transition:all .2s ease;
   }
-  .error{
-    background:#fcf0ec;border:1.5px solid #e8c9c0;color:#8A3B25;
-    border-radius:12px;padding:14px 16px;font-size:14px;margin-top:18px;
+  .btn:hover{background:#4A8551;transform:translateY(-1px);box-shadow:0 10px 24px -10px var(--green)}
+  .btn:disabled{background:#B9C4CE;color:#fff;cursor:default;transform:none;box-shadow:none}
+  .btn-navy{background:var(--ink)}
+  .btn-navy:hover{background:#0A2D44}
+  .btn-ghost{background:transparent;color:var(--navy2);border:1px solid var(--line);font-weight:600}
+  .btn-ghost:hover{background:#fff;color:var(--ink);border-color:var(--navy2);box-shadow:none;transform:none}
+  .spin{width:17px;height:17px;border:2px solid #ffffff66;border-top-color:#fff;border-radius:50%;animation:sp .8s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+
+  .err{display:flex;gap:10px;margin-top:16px;background:#FBEFEC;border:1px solid #E8C9C0;color:#8A3B25;border-radius:14px;padding:13px 16px;font-size:14px}
+
+  .result{margin-top:20px;background:#fff;border:1px solid var(--line);border-radius:20px;overflow:hidden;
+    box-shadow:0 24px 60px -44px rgba(0,34,54,.5);animation:up .6s cubic-bezier(.2,.7,.2,1) both}
+  @keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+  .rhead{padding:24px}
+  .rtop{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;margin-top:12px}
+  .pill{
+    display:inline-flex;align-items:center;font-weight:700;font-size:17px;color:#fff;
+    border-radius:999px;padding:11px 22px;letter-spacing:.2px;
   }
-  .loading{color:var(--muted);font-size:14px;margin-top:18px;display:flex;align-items:center;gap:10px;}
-  .spinner{
-    width:16px;height:16px;border:2.5px solid var(--line);
-    border-top-color:var(--green);border-radius:50%;
-    animation:spin .8s linear infinite;
+  .ridx{text-align:right}
+  .ridx .num{font-weight:800;font-size:30px;line-height:1}
+  .ridx .num small{font-size:14px;font-weight:600;color:#9AA39C}
+  .track{margin-top:18px;height:11px;border-radius:999px;background:#ffffffcc;border:1px solid #ffffff;overflow:hidden}
+  .track > div{height:100%;border-radius:999px;transition:width 1s cubic-bezier(.2,.7,.2,1)}
+  .scale{display:flex;justify-content:space-between;font-size:9.5px;font-weight:600;letter-spacing:.8px;color:var(--navy2);margin-top:7px}
+
+  .rbody{padding:24px}
+  .explain{font-size:15px;color:var(--ink);line-height:1.7;margin:0}
+  .sub{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--green);margin:26px 0 14px}
+  .factor{margin-bottom:14px}
+  .frow{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+  .fname{display:flex;align-items:center;gap:9px;font-size:13.5px;font-weight:600;color:var(--ink)}
+  .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+  .dirtag{font-size:8.5px;font-weight:700;letter-spacing:.4px;border-radius:5px;padding:2px 7px}
+  .fval{font-size:12.5px;font-weight:600;color:var(--navy2)}
+  .fbar{height:8px;border-radius:999px;background:#EEF0ED;overflow:hidden}
+  .fbar > div{height:100%;border-radius:999px;transition:width 1s cubic-bezier(.2,.7,.2,1)}
+  .fnote{font-size:12px;color:#7C8794;margin-top:5px}
+
+  .risks{margin-top:26px}
+  .rtitle{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--amber);margin-bottom:10px}
+  .risks ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+  .risks li{display:flex;gap:9px;font-size:13.5px;color:var(--navy2);line-height:1.55}
+  .risks li span{color:var(--amber)}
+
+  .gov{display:flex;gap:12px;background:var(--ink);color:#C5D4DE;padding:20px 24px;font-size:13.5px;line-height:1.6}
+  .gov strong{color:#fff}
+
+  /* Bloque de validación + firma (estilo deck) */
+  .sign{padding:24px;border-top:1px solid var(--line);background:var(--green-soft)}
+  .sign p{font-size:13px;color:var(--navy2);margin:6px 0 16px;line-height:1.6}
+  .signrow{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:12px}
+  .signrow .f{flex:1;min-width:190px}
+  .signrow .f label{display:block;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--green);margin-bottom:6px}
+  .signrow .f input{
+    width:100%;font-family:'Montserrat',sans-serif;font-size:14px;color:var(--ink);
+    border:1px solid var(--line);border-radius:11px;padding:11px 13px;background:#fff;
   }
-  @keyframes spin{to{transform:rotate(360deg);}}
-  /* REPORT SIGN BLOCK */
-  .signbox{
-    margin-top:18px;border:1.5px dashed var(--line);
-    border-radius:14px;padding:16px 18px;background:#fafcfb;
-  }
-  .signbox h3{
-    font-size:13px;font-weight:700;color:var(--navy);
-    text-transform:uppercase;letter-spacing:.05em;margin:0 0 4px;
-  }
-  .signbox p{font-size:13px;color:var(--muted);margin:0 0 14px;}
-  .signrow{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:12px;}
-  .signrow .f{flex:1;min-width:180px;}
-  .signrow label{display:block;font-size:12.5px;font-weight:600;color:var(--navy);margin-bottom:5px;}
-  .signrow input{
-    width:100%;font-family:inherit;font-size:14px;
-    border:1.5px solid var(--line);border-radius:9px;padding:9px 11px;outline:none;
-  }
-  .signrow input:focus{border-color:var(--green);}
-  @media (prefers-reduced-motion:reduce){.spinner{animation:none;}}
-  @media (max-width:520px){
-    .factor{flex-direction:column;gap:3px;}
-    .factor .fscore{align-self:flex-start;}
-  }
+  .signrow .f input:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px #ffffff}
+  .signactions{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+
+  .again{display:flex;justify-content:center;padding:18px 24px;border-top:1px solid var(--line);background:var(--paper)}
 </style>
 </head>
 <body>
+<div class="wrap">
+
   <div class="head">
-    <h1>Clasificador de tareas</h1>
-    <p>Describe una función o tarea laboral y Praxia Lens la clasificará con criterio ético y transparente.</p>
+    <div class="name">Praxia<b>·</b>Lens</div>
+    <div class="tag">Clasificador de tareas · IA</div>
   </div>
 
-  <div class="field">
-    <label for="task">Tarea o función a evaluar</label>
-    <textarea id="task" placeholder="Ej.: Revisar y aprobar solicitudes de reembolso de empleados…"></textarea>
+  <div class="card">
+    <label class="field">Tarea a evaluar</label>
+    <textarea id="task" placeholder="Describe una tarea o función laboral… (o adjunta un documento abajo)"></textarea>
+
+    <div class="chips" id="chips"></div>
+
+    <div class="toolrow">
+      <button class="attach" id="attachBtn" type="button">
+        <span aria-hidden="true">＋</span> Adjuntar documento o foto
+      </button>
+      <span id="fileWrap"></span>
+      <input id="fileInput" type="file" accept=".pdf,image/png,image/jpeg,image/webp,image/gif" style="display:none" />
+    </div>
     <div class="hint">Acepta PDF e imágenes (PNG, JPG) de hasta 3 MB. Puedes adjuntar un archivo, escribir una tarea, o ambos.</div>
+
+    <div class="actions">
+      <button class="btn" id="go">
+        <span id="goicon" aria-hidden="true">➤</span><span id="golabel">Analizar tarea</span>
+      </button>
+    </div>
   </div>
 
-  <div class="controls">
-    <button class="btn-primary" id="analyzeBtn">Analizar tarea</button>
-    <button class="btn-attach" id="attachBtn">Adjuntar documento o foto</button>
-    <button class="btn-ghost" id="resetBtn">Nuevo análisis</button>
-    <input type="file" id="fileInput" accept=".pdf,image/png,image/jpeg" />
-    <span id="fileWrap"></span>
-  </div>
+  <div id="out"></div>
+</div>
 
-  <div id="result"></div>
-
+<!-- jsPDF para generar el reporte en el navegador (no usa la API) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
-const FACTOR_LABELS = {
-  complejidad_contextual: "Complejidad contextual",
-  contacto_humano: "Contacto humano",
-  responsabilidad_legal: "Responsabilidad legal",
-  discrecion_etica: "Discreción ética",
-  creatividad_juicio: "Creatividad y juicio",
-  repetitividad: "Repetitividad / estandarización"
-};
-const CLS_MAP = {
-  "automatizable": {css:"auto", label:"Automatizable"},
-  "híbrida": {css:"hibrida", label:"Híbrida"},
-  "hibrida": {css:"hibrida", label:"Híbrida"},
-  "indispensablemente humana": {css:"humana", label:"Indispensablemente Humana"},
-  "humana": {css:"humana", label:"Indispensablemente Humana"}
+const EXAMPLES = [
+  "Atender y resolver quejas de clientes molestos",
+  "Generar el reporte mensual de ventas desde la base de datos",
+  "Entrevistar y seleccionar candidatos para un puesto",
+  "Clasificar y archivar facturas según su tipo",
+  "Decidir la promoción o el despido de un empleado",
+];
+
+const CLASS_STYLE = {
+  "Automatizable":            {color:"#3E7243", bg:"#EAF2EB"},
+  "Híbrida":                  {color:"#B0791F", bg:"#F6EEDD"},
+  "Indispensablemente Humana":{color:"#002236", bg:"#E4EAEE"},
 };
 
-let attachedFile = null;
-let lastResult = null;   // guarda el último análisis para el reporte
+const MAX_BYTES = 3 * 1024 * 1024;
 
-const $ = id => document.getElementById(id);
-const taskEl = $("task"), resultEl = $("result"), fileInput = $("fileInput"), fileWrap = $("fileWrap");
+const taskEl = document.getElementById("task");
+const out = document.getElementById("out");
+const goBtn = document.getElementById("go");
+const goLabel = document.getElementById("golabel");
 
-$("attachBtn").onclick = () => fileInput.click();
+const attachBtn = document.getElementById("attachBtn");
+const fileInput = document.getElementById("fileInput");
+const fileWrap = document.getElementById("fileWrap");
 
+let attached = null; // { name, mediaType, data(base64) }
+let lastResult = null; // guarda el análisis + la tarea, para el reporte
+
+const chips = document.getElementById("chips");
+EXAMPLES.forEach(ex=>{
+  const b=document.createElement("button");
+  b.className="chip"; b.textContent=ex; b.type="button";
+  b.onclick=()=>{ taskEl.value=ex; analyze(); };
+  chips.appendChild(b);
+});
+
+const esc = s => String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const clamp = n => Math.max(0, Math.min(100, parseInt(n,10)||0));
+
+attachBtn.onclick = () => fileInput.click();
 fileInput.onchange = () => {
-  const f = fileInput.files[0];
-  if(!f){ attachedFile=null; fileWrap.innerHTML=""; return; }
-  if(f.size > 3*1024*1024){
-    fileWrap.innerHTML = '<span class="filechip" style="color:#8A3B25;border-color:#e8c9c0">Archivo muy grande (máx 3 MB)</span>';
-    attachedFile=null; fileInput.value=""; return;
+  const f = fileInput.files && fileInput.files[0];
+  if(!f) return;
+  if(f.size > MAX_BYTES){
+    fileWrap.innerHTML = '<span class="filechip" style="color:#8A3B25;border-color:#E8C9C0">Archivo muy grande (máx 3 MB)</span>';
+    fileInput.value = ""; attached = null; return;
   }
-  attachedFile = f;
-  fileWrap.innerHTML = '<span class="filechip">'+f.name+'<span class="x" id="rmFile">×</span></span>';
-  $("rmFile").onclick = () => { attachedFile=null; fileInput.value=""; fileWrap.innerHTML=""; };
+  const reader = new FileReader();
+  reader.onload = () => {
+    attached = { name: f.name, mediaType: f.type || "application/octet-stream", data: String(reader.result).split(",")[1] };
+    fileWrap.innerHTML = '<span class="filechip">'+esc(f.name)+' <span class="x" id="rmFile">×</span></span>';
+    document.getElementById("rmFile").onclick = clearFile;
+  };
+  reader.readAsDataURL(f);
 };
+function clearFile(){ attached=null; fileInput.value=""; fileWrap.innerHTML=""; }
 
-$("resetBtn").onclick = () => {
-  taskEl.value=""; attachedFile=null; fileInput.value="";
-  fileWrap.innerHTML=""; resultEl.innerHTML=""; lastResult=null;
-};
-
-$("analyzeBtn").onclick = analyze;
-
-function fileToBase64(file){
-  return new Promise((res,rej)=>{
-    const r=new FileReader();
-    r.onload=()=>res(r.result.split(",")[1]);
-    r.onerror=()=>rej(new Error("No se pudo leer el archivo."));
-    r.readAsDataURL(file);
-  });
+function setLoading(on){
+  goBtn.disabled = on;
+  const icon = document.getElementById("goicon");
+  if(on){ icon.outerHTML = '<span id="goicon" class="spin"></span>'; goLabel.textContent="Analizando…"; }
+  else { const i=document.getElementById("goicon"); if(i){ i.outerHTML='<span id="goicon" aria-hidden="true">➤</span>'; } goLabel.textContent="Analizar tarea"; }
 }
 
 async function analyze(){
   const task = taskEl.value.trim();
-  if(!task && !attachedFile){
-    resultEl.innerHTML = '<div class="error">Escribe una tarea o adjunta un documento para analizar.</div>';
-    return;
-  }
-  $("analyzeBtn").disabled = true;
-  resultEl.innerHTML = '<div class="loading"><span class="spinner"></span> Analizando con criterio ético…</div>';
-
+  if(!task && !attached) return;
+  setLoading(true); out.innerHTML="";
   try{
-    const payload = { task };
-    if(attachedFile){
-      payload.fileData = await fileToBase64(attachedFile);
-      payload.fileType = attachedFile.type;
-      payload.fileName = attachedFile.name;
-    }
-    const r = await fetch("/api/classify",{
+    const res = await fetch("/api/classify", {
       method:"POST",
       headers:{"Content-Type":"application/json"},
-      body:JSON.stringify(payload)
+      body: JSON.stringify({ task, file: attached ? { data: attached.data, mediaType: attached.mediaType } : null })
     });
-    const data = await r.json();
-    if(!r.ok){ throw new Error(data.error || "Error del servidor."); }
-    lastResult = { ...data, taskText: task || (attachedFile ? attachedFile.name : "") };
-    render(lastResult);
+    if(!res.ok) throw new Error("bad status");
+    const data = await res.json();
+    if(data.error) throw new Error(data.error);
+    lastResult = { ...data, _task: task || (attached ? attached.name : "") };
+    render(data);
   }catch(e){
-    resultEl.innerHTML = '<div class="error">'+e.message+'</div>';
+    out.innerHTML = '<div class="err"><span aria-hidden="true">⚠</span><span>No se pudo completar el análisis. Verifica que el bot esté publicado y que la llave de API esté configurada en Vercel. Si adjuntaste un archivo, prueba con uno más pequeño.</span></div>';
   }finally{
-    $("analyzeBtn").disabled = false;
+    setLoading(false);
   }
 }
+goBtn.onclick = analyze;
 
-function render(d){
-  const key = (d.clasificacion||"").toLowerCase().trim();
-  const cls = CLS_MAP[key] || {css:"hibrida", label:d.clasificacion||"Sin clasificar"};
-  let factorsHtml = "";
-  const factores = d.factores || {};
-  for(const k in FACTOR_LABELS){
-    const f = factores[k];
-    if(!f) continue;
-    const just = typeof f === "object" ? (f.justificacion||"") : "";
-    const score = typeof f === "object" ? (f.nivel||f.score||"") : f;
-    factorsHtml += '<div class="factor"><span class="fname">'+FACTOR_LABELS[k]+'</span>'+
-      '<span class="fjust">'+just+'</span><span class="fscore">'+score+'</span></div>';
-  }
-  resultEl.innerHTML =
-    '<div class="card">'+
-      '<div class="verdict '+cls.css+'"><div class="tag">Clasificación</div><div class="cls">'+cls.label+'</div></div>'+
-      '<div class="body">'+
-        (d.resumen ? '<p class="summary">'+d.resumen+'</p>' : '')+
-        '<h3>Factores evaluados</h3>'+ factorsHtml +
-      '</div>'+
-    '</div>'+
-    buildSignBlock();
-  $("genReportBtn").onclick = generateReport;
+function resetAll(){
+  taskEl.value = "";
+  clearFile();
+  out.innerHTML = "";
+  lastResult = null;
+  window.scrollTo({ top:0, behavior:"smooth" });
+  taskEl.focus();
 }
 
-function buildSignBlock(){
-  return ''+
-  '<div class="signbox">'+
-    '<h3>Validación humana del análisis</h3>'+
-    '<p>Esta clasificación es un insumo de apoyo, no una decisión. Requiere revisión y firma de un responsable humano antes de informar cualquier acción.</p>'+
-    '<div class="signrow">'+
-      '<div class="f"><label for="rName">Nombre del responsable (letra de molde)</label><input id="rName" type="text" placeholder="Nombre y apellido" /></div>'+
-      '<div class="f"><label for="rRole">Cargo o función</label><input id="rRole" type="text" placeholder="Ej.: Gerente de Operaciones" /></div>'+
-    '</div>'+
-    '<div class="signrow">'+
-      '<div class="f"><label for="rOrg">Organización (opcional)</label><input id="rOrg" type="text" placeholder="Nombre de la empresa" /></div>'+
-    '</div>'+
-    '<button class="btn-report" id="genReportBtn">Generar reporte para firma (PDF)</button>'+
-  '</div>';
+function render(r){
+  const cls = CLASS_STYLE[r.clasificacion] || CLASS_STYLE["Híbrida"];
+  const idx = clamp(r.indice_automatizacion);
+
+  const factors = (r.factores||[]).map(f=>{
+    const auto = f.direccion === "automatiza";
+    const col = auto ? "#3E7243" : "#002236";
+    const p = clamp(f.presencia);
+    return `
+      <div class="factor">
+        <div class="frow">
+          <div class="fname">
+            <span class="dot" style="background:${col}"></span>${esc(f.nombre)}
+            <span class="dirtag" style="color:${col};border:1px solid ${col}44">${auto?"→ AUTOMATIZA":"→ HUMANO"}</span>
+          </div>
+          <span class="fval">${p}</span>
+        </div>
+        <div class="fbar"><div style="width:${p}%;background:${col}"></div></div>
+        ${f.nota?`<div class="fnote">${esc(f.nota)}</div>`:""}
+      </div>`;
+  }).join("");
+
+  const risks = Array.isArray(r.riesgos_eticos)&&r.riesgos_eticos.length
+    ? `<div class="risks"><div class="rtitle">⚠ Riesgos éticos a vigilar</div><ul>${
+        r.riesgos_eticos.map(x=>`<li><span aria-hidden="true">▸</span>${esc(x)}</li>`).join("")
+      }</ul></div>` : "";
+
+  out.innerHTML = `
+    <div class="result">
+      <div class="rhead" style="background:${cls.bg}">
+        <div class="eyebrow">Clasificación propuesta</div>
+        <div class="rtop">
+          <span class="pill" style="background:${cls.color}">${esc(r.clasificacion)}</span>
+          <div class="ridx">
+            <div class="eyebrow" style="color:${cls.color}">Índice de automatización</div>
+            <div class="num" style="color:${cls.color}">${idx}<small>/100</small></div>
+          </div>
+        </div>
+        <div class="track"><div style="width:${idx}%;background:${cls.color}"></div></div>
+        <div class="scale"><span>HUMANO</span><span>HÍBRIDO</span><span>AUTOMATIZABLE</span></div>
+      </div>
+      <div class="rbody">
+        <p class="explain">${esc(r.explicacion)}</p>
+        <div class="sub">Factores de criterio (pesos transparentes)</div>
+        ${factors}
+        ${risks}
+      </div>
+      <div class="gov">
+        <span style="color:#5E9A63;flex-shrink:0" aria-hidden="true">✎</span>
+        <div><strong>Supervisión humana obligatoria. </strong>${
+          esc(r.gobernanza || "Esta clasificación es un insumo, no una decisión. Debe ser revisada, validada y firmada por un responsable humano, y nunca puede ser la base única de una acción de personal.")
+        }</div>
+      </div>
+
+      <div class="sign">
+        <div class="eyebrow">Validación humana del análisis</div>
+        <p>Esta clasificación requiere la revisión y firma de un responsable humano antes de informar cualquier decisión. Completa los datos y genera el reporte en formato carta para firmar.</p>
+        <div class="signrow">
+          <div class="f"><label for="rName">Nombre del responsable (letra de molde)</label><input id="rName" type="text" placeholder="Nombre y apellido" /></div>
+          <div class="f"><label for="rRole">Cargo o función</label><input id="rRole" type="text" placeholder="Ej.: Gerente de Operaciones" /></div>
+        </div>
+        <div class="signrow">
+          <div class="f"><label for="rOrg">Organización (opcional)</label><input id="rOrg" type="text" placeholder="Nombre de la empresa o entidad" /></div>
+        </div>
+        <div class="signactions">
+          <button class="btn btn-navy" id="genReport" type="button"><span aria-hidden="true">⬇</span> Generar reporte para firma (PDF)</button>
+        </div>
+      </div>
+
+      <div class="again">
+        <button class="btn btn-ghost" id="newBtn" type="button">↺ &nbsp;Nuevo análisis</button>
+      </div>
+    </div>`;
+  document.getElementById("newBtn").onclick = resetAll;
+  document.getElementById("genReport").onclick = generateReport;
 }
 
-/* ---------- REPORTE PDF (formato carta) ---------- */
+/* ============ REPORTE PDF · formato carta ============ */
 function generateReport(){
-  if(!lastResult) return;
+  if(!lastResult || !window.jspdf){ return; }
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({unit:"pt", format:"letter"}); // 612 x 792 pt
-  const M = 56;                 // margen
-  const W = 612 - M*2;          // ancho útil
+  const doc = new jsPDF({ unit:"pt", format:"letter" }); // 612 x 792 pt
+  const M = 58, W = 612 - M*2, BOTTOM = 752;
   let y = M;
 
-  const NAVY=[0,34,54], GREEN=[62,114,67], INK=[28,43,51], MUTED=[93,108,116], LINE=[221,228,231];
+  const NAVY=[0,34,54], GREEN=[62,114,67], INK=[28,43,51], MUTED=[93,108,116], LINE=[224,228,225];
+  const r = lastResult;
+  const idx = clamp(r.indice_automatizacion);
+  const clsName = r.clasificacion || "—";
+  const clsColor = clsName.indexOf("Automatiz")===0 ? GREEN
+                 : clsName.indexOf("Indispensable")===0 ? [0,34,54]
+                 : [176,121,31];
   const today = new Date().toLocaleDateString("es-PR",{year:"numeric",month:"long",day:"numeric"});
 
-  // Encabezado de marca
-  doc.setFont("times","bold"); doc.setFontSize(20); doc.setTextColor(...NAVY);
-  doc.text("PRAXIA LENS", M, y); y+=8;
-  doc.setFont("helvetica","normal"); doc.setFontSize(9); doc.setTextColor(...GREEN);
-  doc.text("Automatizar con criterio. Decidir con humanidad.", M, y+8); y+=18;
-  doc.setDrawColor(...GREEN); doc.setLineWidth(1.5); doc.line(M, y, M+W, y); y+=26;
-
-  // Título del documento
-  doc.setFont("times","bold"); doc.setFontSize(14); doc.setTextColor(...INK);
-  doc.text("Reporte de Clasificación de Tarea", M, y); y+=16;
-  doc.setFont("helvetica","normal"); doc.setFontSize(9.5); doc.setTextColor(...MUTED);
-  doc.text("Fecha de emisión: "+today, M, y); y+=26;
-
-  // Tarea evaluada
-  doc.setFont("helvetica","bold"); doc.setFontSize(10.5); doc.setTextColor(...NAVY);
-  doc.text("Tarea o función evaluada", M, y); y+=14;
-  doc.setFont("helvetica","normal"); doc.setFontSize(10.5); doc.setTextColor(...INK);
-  y = wrap(doc, lastResult.taskText || "—", M, y, W, 14); y+=14;
-
-  // Clasificación (banda de color)
-  const key=(lastResult.clasificacion||"").toLowerCase().trim();
-  const clsColor = key.includes("automatiz") ? GREEN : key.includes("humana") ? [31,95,168] : [183,121,31];
-  const clsLabel = (CLS_MAP[key]||{label:lastResult.clasificacion||"—"}).label;
-  doc.setFillColor(...clsColor); doc.roundedRect(M, y, W, 34, 5, 5, "F");
-  doc.setFont("helvetica","bold"); doc.setFontSize(8); doc.setTextColor(255,255,255);
-  doc.text("CLASIFICACIÓN", M+14, y+13);
-  doc.setFont("times","bold"); doc.setFontSize(14);
-  doc.text(clsLabel, M+14, y+27); y+=50;
-
-  // Resumen
-  if(lastResult.resumen){
-    doc.setFont("helvetica","bold"); doc.setFontSize(10.5); doc.setTextColor(...NAVY);
-    doc.text("Resumen del análisis", M, y); y+=14;
-    doc.setFont("helvetica","normal"); doc.setFontSize(10); doc.setTextColor(...INK);
-    y = wrap(doc, lastResult.resumen, M, y, W, 13); y+=16;
+  function pb(need){ if(y+need>BOTTOM){ doc.addPage(); y=M; } }
+  function para(text,x,size,color,style,lh,width){
+    doc.setFont("helvetica",style||"normal"); doc.setFontSize(size); doc.setTextColor(...(color||INK));
+    const lines = doc.splitTextToSize(String(text||""), width||W);
+    for(const ln of lines){ pb(lh); doc.text(ln, x, y); y+=lh; }
   }
 
-  // Factores
-  doc.setFont("helvetica","bold"); doc.setFontSize(10.5); doc.setTextColor(...NAVY);
-  doc.text("Factores evaluados", M, y); y+=14;
-  const factores = lastResult.factores || {};
-  for(const k in FACTOR_LABELS){
-    const f=factores[k]; if(!f) continue;
-    const just = typeof f==="object" ? (f.justificacion||"") : "";
-    const score= typeof f==="object" ? (f.nivel||f.score||"") : f;
-    y = pageBreak(doc, y, 40, M);
+  // ---- Encabezado de marca ----
+  doc.setFont("helvetica","bold"); doc.setFontSize(19); doc.setTextColor(...NAVY);
+  doc.text("PRAXIA", M, y);
+  const wPraxia = doc.getTextWidth("PRAXIA ");
+  doc.setTextColor(...GREEN); doc.text(" LENS", M+wPraxia, y);
+  y+=14;
+  doc.setFont("helvetica","normal"); doc.setFontSize(9); doc.setTextColor(...GREEN);
+  doc.text("Automatizar con criterio. Decidir con humanidad.", M, y); y+=12;
+  doc.setDrawColor(...GREEN); doc.setLineWidth(2); doc.line(M, y, M+W, y); y+=26;
+
+  // ---- Título del documento ----
+  doc.setFont("helvetica","bold"); doc.setFontSize(15); doc.setTextColor(...INK);
+  doc.text("Reporte de clasificación de tarea", M, y); y+=16;
+  doc.setFont("helvetica","normal"); doc.setFontSize(9.5); doc.setTextColor(...MUTED);
+  doc.text("Fecha de emisión: "+today, M, y); y+=24;
+
+  // ---- Tarea evaluada ----
+  doc.setFont("helvetica","bold"); doc.setFontSize(8.5); doc.setTextColor(...GREEN);
+  doc.text("TAREA O FUNCIÓN EVALUADA", M, y); y+=13;
+  para(r._task || "—", M, 10.5, INK, "normal", 14); y+=14;
+
+  // ---- Banda de clasificación + índice ----
+  pb(54);
+  doc.setFillColor(...clsColor); doc.roundedRect(M, y, W, 42, 7, 7, "F");
+  doc.setFont("helvetica","bold"); doc.setFontSize(7.5); doc.setTextColor(255,255,255);
+  doc.text("CLASIFICACIÓN PROPUESTA", M+16, y+15);
+  doc.setFontSize(15); doc.text(clsName, M+16, y+32);
+  doc.setFontSize(7.5); doc.setFont("helvetica","bold");
+  doc.text("ÍNDICE DE AUTOMATIZACIÓN", M+W-16, y+15, {align:"right"});
+  doc.setFontSize(20); doc.text(idx+" / 100", M+W-16, y+33, {align:"right"});
+  y+=58;
+
+  // ---- Explicación ----
+  if(r.explicacion){
+    doc.setFont("helvetica","bold"); doc.setFontSize(8.5); doc.setTextColor(...GREEN);
+    doc.text("RESUMEN DEL ANÁLISIS", M, y); y+=13;
+    para(r.explicacion, M, 10, INK, "normal", 14); y+=16;
+  }
+
+  // ---- Factores ----
+  doc.setFont("helvetica","bold"); doc.setFontSize(8.5); doc.setTextColor(...GREEN);
+  pb(20); doc.text("FACTORES DE CRITERIO (PESOS TRANSPARENTES)", M, y); y+=15;
+  (r.factores||[]).forEach(f=>{
+    const auto = f.direccion === "automatiza";
+    const col = auto ? GREEN : NAVY;
+    const p = clamp(f.presencia);
+    pb(34);
+    // nombre + dirección + valor
     doc.setFont("helvetica","bold"); doc.setFontSize(10); doc.setTextColor(...INK);
-    doc.text(FACTOR_LABELS[k] + (score? "  ·  "+score : ""), M, y); y+=13;
-    if(just){
+    doc.text(f.nombre || "", M+12, y);
+    const nameW = doc.getTextWidth(f.nombre || ""); // medido a tamaño 10
+    doc.setFontSize(7.5); doc.setTextColor(...col);
+    doc.text(auto?"AUTOMATIZA":"HUMANO", M+12+nameW+10, y);
+    doc.setFont("helvetica","bold"); doc.setFontSize(10); doc.setTextColor(...col);
+    doc.text(String(p), M+W, y, {align:"right"});
+    // punto de color
+    doc.setFillColor(...col); doc.circle(M+4, y-3, 3, "F");
+    y+=7;
+    // barra
+    doc.setFillColor(238,240,237); doc.roundedRect(M+12, y, W-12, 5, 2.5, 2.5, "F");
+    doc.setFillColor(...col); doc.roundedRect(M+12, y, Math.max(3,(W-12)*p/100), 5, 2.5, 2.5, "F");
+    y+=11;
+    if(f.nota){ doc.setFont("helvetica","normal"); doc.setFontSize(8.5); doc.setTextColor(...MUTED);
+      const ln = doc.splitTextToSize(f.nota, W-12); pb(ln.length*10);
+      ln.forEach(l=>{ doc.text(l, M+12, y); y+=10; }); }
+    y+=8;
+  });
+  y+=4;
+
+  // ---- Riesgos ----
+  if(Array.isArray(r.riesgos_eticos) && r.riesgos_eticos.length){
+    pb(24); doc.setFont("helvetica","bold"); doc.setFontSize(8.5); doc.setTextColor(176,121,31);
+    doc.text("RIESGOS ÉTICOS A VIGILAR", M, y); y+=13;
+    r.riesgos_eticos.forEach(x=>{
       doc.setFont("helvetica","normal"); doc.setFontSize(9.5); doc.setTextColor(...MUTED);
-      y = wrap(doc, just, M, y, W, 12); 
-    }
+      const ln = doc.splitTextToSize("•  "+x, W-6); pb(ln.length*12);
+      ln.forEach(l=>{ doc.text(l, M, y); y+=12; }); y+=3;
+    });
     y+=10;
   }
-  y+=6;
 
-  // Leyenda de gobernanza
-  y = pageBreak(doc, y, 70, M);
+  // ---- Leyenda de gobernanza ----
+  pb(60);
   doc.setDrawColor(...LINE); doc.setLineWidth(1); doc.line(M, y, M+W, y); y+=16;
-  doc.setFont("helvetica","italic"); doc.setFontSize(9); doc.setTextColor(...MUTED);
-  y = wrap(doc, "Esta clasificación constituye un insumo de apoyo a la decisión y no puede ser la base única de una acción de personal. Requiere revisión, validación y firma de un responsable humano identificado antes de informar cualquier decisión organizacional.", M, y, W, 12);
+  para("Supervisión humana obligatoria. Esta clasificación constituye un insumo de apoyo a la decisión y no puede ser la base única de una acción de personal. Requiere revisión, validación y firma de un responsable humano identificado antes de informar cualquier decisión organizacional.",
+       M, 9, MUTED, "italic", 12);
   y+=22;
 
-  // Bloque de firma
-  y = pageBreak(doc, y, 130, M);
+  // ---- Bloque de firma ----
+  pb(140);
   const name=(document.getElementById("rName")||{}).value||"";
   const role=(document.getElementById("rRole")||{}).value||"";
   const org =(document.getElementById("rOrg")||{}).value||"";
   doc.setFont("helvetica","bold"); doc.setFontSize(10.5); doc.setTextColor(...NAVY);
-  doc.text("Validación y firma del responsable", M, y); y+=24;
+  doc.text("Validación y firma del responsable", M, y); y+=26;
+  const colW = (W-30)/2, c2 = M+colW+30;
 
-  // Nombre en letra de molde
-  doc.setFont("helvetica","normal"); doc.setFontSize(10.5); doc.setTextColor(...INK);
-  doc.text(name || "", M, y);
-  doc.setDrawColor(...LINE); doc.line(M, y+5, M+260, y+5);
+  // Nombre (letra de molde) | Cargo
+  doc.setFont("helvetica","normal"); doc.setFontSize(11); doc.setTextColor(...INK);
+  if(name) doc.text(name, M, y);
+  if(role) doc.text(role, c2, y);
+  doc.setDrawColor(...LINE); doc.line(M, y+6, M+colW, y+6); doc.line(c2, y+6, c2+colW, y+6);
   doc.setFontSize(8); doc.setTextColor(...MUTED);
-  doc.text("Nombre en letra de molde", M, y+17);
+  doc.text("Nombre en letra de molde", M, y+18); doc.text("Cargo o función", c2, y+18);
+  y+=56;
 
-  // Cargo
-  doc.setFont("helvetica","normal"); doc.setFontSize(10.5); doc.setTextColor(...INK);
-  doc.text(role || "", M+300, y);
-  doc.line(M+300, y+5, M+W, y+5);
+  // Firma (en blanco) | Fecha
+  doc.setDrawColor(...LINE); doc.line(M, y+6, M+colW, y+6); doc.line(c2, y+6, c2+colW, y+6);
   doc.setFontSize(8); doc.setTextColor(...MUTED);
-  doc.text("Cargo o función", M+300, y+17);
-  y+=58;
-
-  // Firma manuscrita (espacio en blanco) + fecha
-  doc.setDrawColor(...LINE); doc.line(M, y+5, M+260, y+5);
-  doc.setFontSize(8); doc.setTextColor(...MUTED);
-  doc.text("Firma", M, y+17);
-  doc.line(M+300, y+5, M+W, y+5);
-  doc.text("Fecha", M+300, y+17);
+  doc.text("Firma", M, y+18); doc.text("Fecha", c2, y+18);
   y+=40;
+  if(org){ doc.setFontSize(9); doc.setTextColor(...MUTED); doc.text("Organización: "+org, M, y); }
 
-  if(org){
-    doc.setFontSize(9); doc.setTextColor(...MUTED);
-    doc.text("Organización: "+org, M, y);
+  // ---- Pie en cada página ----
+  const pages = doc.getNumberOfPages();
+  for(let i=1;i<=pages;i++){
+    doc.setPage(i);
+    doc.setFont("helvetica","normal"); doc.setFontSize(7.5); doc.setTextColor(...MUTED);
+    doc.text("Generado por Praxia Lens — instrumento de rendición de cuentas sobre la automatización.", M, 772);
+    doc.text(i+" / "+pages, M+W, 772, {align:"right"});
   }
 
-  // Pie
-  doc.setFontSize(8); doc.setTextColor(...MUTED);
-  doc.text("Generado por Praxia Lens — instrumento de rendición de cuentas sobre la automatización.", M, 770);
-
-  const safe = (lastResult.taskText||"tarea").slice(0,30).replace(/[^\wáéíóúñ ]/gi,"").trim().replace(/\s+/g,"_");
-  doc.save("Praxia_Lens_Reporte_"+(safe||"tarea")+".pdf");
-}
-
-// Envuelve texto y devuelve la nueva y. Maneja salto de página.
-function wrap(doc, text, x, y, maxW, lh){
-  const lines = doc.splitTextToSize(String(text), maxW);
-  for(const ln of lines){
-    y = pageBreak(doc, y, lh, 56);
-    doc.text(ln, x, y); y+=lh;
-  }
-  return y;
-}
-function pageBreak(doc, y, needed, top){
-  if(y + needed > 770){ doc.addPage(); return top; }
-  return y;
+  const safe = (r._task||"tarea").slice(0,32).replace(/[^\wáéíóúñ ]/gi,"").trim().replace(/\s+/g,"_") || "tarea";
+  doc.save("Praxia_Lens_Reporte_"+safe+".pdf");
 }
 </script>
 </body>
