@@ -1,107 +1,95 @@
-// Función serverless (Vercel). Vive en /api/classify y guarda la llave en secreto.
-// El navegador del visitante NUNCA ve la llave: solo habla con esta función.
+// Praxia Lens — función serverless (Vercel)
+// Protege la API key: nunca se expone al navegador.
 
-const SYSTEM_PROMPT = `Eres el motor de clasificación de "Praxia Lens", una herramienta de gobernanza ética que ayuda a las organizaciones (sobre todo PyMEs y entidades con fondos públicos) a discernir qué tareas laborales son idóneas para automatizarse con IA y cuáles deben permanecer humanas.
+const SYSTEM_PROMPT = `Eres Praxia Lens, un clasificador de tareas laborales con criterio ético y transparente.
+Tu misión: que la IA libere tiempo sin desplazar personas, distinguiendo con criterio ético lo que solo el humano puede hacer.
 
-Tu misión: que la IA libere tiempo sin desplazar personas, distinguiendo con criterio ético lo que solo el ser humano puede hacer. NO emites un veredicto operativo: facilitas un juicio que un humano verá, cuestionará y firmará.
+Clasifica la tarea recibida en UNA de estas tres categorías:
+- "Automatizable": tareas repetitivas, estandarizadas, de bajo contacto humano y baja discreción ética.
+- "Híbrida": tareas donde la IA apoya pero el juicio humano sigue siendo necesario.
+- "Indispensablemente Humana": tareas que dependen de empatía, criterio ético, responsabilidad legal, creatividad o contacto humano significativo.
 
-Analiza la tarea que te entregue el usuario contra estos seis factores (cada uno medido 0-100 según cuán presente está en la tarea):
-- "Contacto humano": empatía, trato directo, relación significativa con personas. Empuja a HUMANO.
-- "Discreción ética": juicio de valores, decisiones moralmente cargadas. Empuja a HUMANO.
-- "Responsabilidad legal": consecuencias legales o sobre la trayectoria de personas. Empuja a HUMANO.
-- "Complejidad contextual": ambigüedad, casos no estandarizables. Empuja a HUMANO.
-- "Presencia física": inspecciones, movimiento, destreza corporal en sitio. Empuja a HUMANO.
-- "Repetitividad / estructura": reglas claras, alto volumen, datos estructurados. Empuja a AUTOMATIZABLE.
+Evalúa SIEMPRE estos seis factores, cada uno con un nivel (Bajo / Medio / Alto) y una justificación breve (1 oración):
+- complejidad_contextual
+- contacto_humano
+- responsabilidad_legal
+- discrecion_etica
+- creatividad_juicio
+- repetitividad
 
-Calcula un "indice_automatizacion" de 0 a 100 (100 = muy apta para automatizar; 0 = esencialmente humana). Clasifica así:
-- 67-100 => "Automatizable"
-- 34-66 => "Híbrida"
-- 0-33 => "Indispensablemente Humana"
-
-Responde ÚNICAMENTE con un objeto JSON válido, sin texto antes ni después, sin markdown, con esta forma exacta:
+Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional, sin markdown, sin backticks, con esta forma exacta:
 {
-  "indice_automatizacion": <entero 0-100>,
   "clasificacion": "Automatizable" | "Híbrida" | "Indispensablemente Humana",
-  "factores": [
-    {"nombre": "Contacto humano", "presencia": <0-100>, "direccion": "humano", "nota": "<frase muy breve>"},
-    {"nombre": "Discreción ética", "presencia": <0-100>, "direccion": "humano", "nota": "<frase muy breve>"},
-    {"nombre": "Responsabilidad legal", "presencia": <0-100>, "direccion": "humano", "nota": "<frase muy breve>"},
-    {"nombre": "Complejidad contextual", "presencia": <0-100>, "direccion": "humano", "nota": "<frase muy breve>"},
-    {"nombre": "Presencia física", "presencia": <0-100>, "direccion": "humano", "nota": "<frase muy breve>"},
-    {"nombre": "Repetitividad / estructura", "presencia": <0-100>, "direccion": "automatiza", "nota": "<frase muy breve>"}
-  ],
-  "explicacion": "<2 a 3 oraciones en español que justifiquen la clasificación, en lenguaje claro>",
-  "riesgos_eticos": ["<riesgo 1 breve>", "<riesgo 2 breve>"],
-  "gobernanza": "<recordatorio breve de que esta clasificación es un insumo, requiere revisión humana y nunca puede ser base única de una decisión de personal>"
+  "resumen": "explicación breve de 2-3 oraciones",
+  "factores": {
+    "complejidad_contextual": {"nivel": "...", "justificacion": "..."},
+    "contacto_humano": {"nivel": "...", "justificacion": "..."},
+    "responsabilidad_legal": {"nivel": "...", "justificacion": "..."},
+    "discrecion_etica": {"nivel": "...", "justificacion": "..."},
+    "creatividad_juicio": {"nivel": "...", "justificacion": "..."},
+    "repetitividad": {"nivel": "...", "justificacion": "..."}
+  }
 }`;
 
-export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Método no permitido" });
+export default async function handler(req, res){
+  if(req.method !== "POST"){
+    return res.status(405).json({ error: "Método no permitido." });
   }
-
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    return res.status(500).json({ error: "Falta configurar ANTHROPIC_API_KEY en el host." });
+  if(!apiKey){
+    return res.status(500).json({ error: "Falta configurar la llave del servidor." });
   }
 
-  try {
+  try{
     const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
     const task = (body.task || "").toString().trim();
-    const file = body.file && body.file.data ? body.file : null;
+    const fileData = body.fileData, fileType = body.fileType;
 
-    if (!task && !file) {
-      return res.status(400).json({ error: "No se recibió ninguna tarea ni archivo." });
+    if(!task && !fileData){
+      return res.status(400).json({ error: "No se recibió ninguna tarea ni documento." });
     }
 
-    // Construir el contenido del mensaje (texto, o documento/imagen + instrucción)
-    let content;
-    if (file) {
-      const mt = (file.mediaType || "").toLowerCase();
-      const isPdf = mt.includes("pdf");
-      const block = isPdf
-        ? { type: "document", source: { type: "base64", media_type: "application/pdf", data: file.data } }
-        : { type: "image", source: { type: "base64", media_type: mt || "image/png", data: file.data } };
-      const instr = task
-        ? `Evalúa la tarea o función laboral descrita en el archivo adjunto. Contexto adicional del usuario: "${task}". Si el archivo describe varias tareas, enfócate en la función principal.`
-        : `Evalúa la tarea o función laboral descrita en el archivo adjunto. Si describe varias tareas, enfócate en la función principal.`;
-      content = [block, { type: "text", text: instr }];
-    } else {
-      content = `Tarea a evaluar: "${task}"`;
+    // Construye el contenido del mensaje (texto y, si hay, documento/imagen)
+    const content = [];
+    if(fileData && fileType === "application/pdf"){
+      content.push({ type:"document", source:{ type:"base64", media_type:"application/pdf", data:fileData }});
+    } else if(fileData && (fileType === "image/png" || fileType === "image/jpeg")){
+      content.push({ type:"image", source:{ type:"base64", media_type:fileType, data:fileData }});
     }
+    content.push({ type:"text", text: task ? `Tarea a evaluar: "${task}"` : "Analiza y clasifica la tarea o función descrita en el documento adjunto." });
 
-    const r = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
+    const r = await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{
+        "content-type":"application/json",
+        "x-api-key":apiKey,
+        "anthropic-version":"2023-06-01"
       },
-      body: JSON.stringify({
-        model: "claude-haiku-4-5",
-        max_tokens: 1500,
-        system: SYSTEM_PROMPT,
-        messages: [{ role: "user", content }],
-      }),
+      body:JSON.stringify({
+        model:"claude-haiku-4-5",
+        max_tokens:1000,
+        system:SYSTEM_PROMPT,
+        messages:[{ role:"user", content }]
+      })
     });
 
     const data = await r.json();
-    if (!r.ok) {
-      return res.status(502).json({ error: "Error del modelo: " + (data?.error?.message || r.status) });
+    if(!r.ok){
+      return res.status(502).json({ error:"Error del modelo: " + (data?.error?.message || r.status) });
     }
 
     const text = (data.content || [])
-      .map((b) => (b.type === "text" ? b.text : ""))
+      .map(b => (b.type === "text" ? b.text : ""))
       .join("")
       .replace(/```json|```/g, "")
       .trim();
 
     let parsed;
-    try { parsed = JSON.parse(text); }
-    catch { return res.status(502).json({ error: "El modelo no devolvió un JSON válido." }); }
+    try{ parsed = JSON.parse(text); }
+    catch{ return res.status(502).json({ error:"El modelo no devolvió un JSON válido." }); }
 
     return res.status(200).json(parsed);
-  } catch (e) {
-    return res.status(500).json({ error: "Error inesperado en el servidor." });
+  }catch(e){
+    return res.status(500).json({ error:"Error inesperado en el servidor." });
   }
 }
